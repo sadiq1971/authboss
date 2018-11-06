@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"path"
+	//"net/url"
+	//"path"
 
 	"github.com/pkg/errors"
 
@@ -55,15 +55,16 @@ func (c *Confirm) Init(ab *authboss.Authboss) (err error) {
 		return err
 	}
 
-	var callbackMethod func(string, http.Handler)
+	/*var callbackMethod func(string, http.Handler)
 	switch c.Config.Modules.ConfirmMethod {
 	case http.MethodGet:
 		callbackMethod = c.Authboss.Config.Core.Router.Get
 	case http.MethodPost:
 		callbackMethod = c.Authboss.Config.Core.Router.Post
 	}
-	callbackMethod("/confirm", c.Authboss.Config.Core.ErrorHandler.Wrap(c.Get))
+	callbackMethod("/confirm", c.Authboss.Config.Core.ErrorHandler.Wrap(c.Get))*/
 
+	c.Authboss.Config.Core.Router.Post("/confirm", c.Authboss.Config.Core.ErrorHandler.Wrap(c.Post))
 	c.Events.Before(authboss.EventAuth, c.PreventAuth)
 	c.Events.After(authboss.EventRegister, c.StartConfirmationWeb)
 
@@ -172,7 +173,7 @@ func (c *Confirm) SendConfirmEmail(ctx context.Context, to, token string) {
 }
 
 // Get is a request that confirms a user with a valid token
-func (c *Confirm) Get(w http.ResponseWriter, r *http.Request) error {
+func (c *Confirm) Post(w http.ResponseWriter, r *http.Request) error {
 	logger := c.RequestLogger(r)
 
 	validator, err := c.Authboss.Config.Core.BodyReader.Read(PageConfirm, r)
@@ -241,14 +242,16 @@ func (c *Confirm) Get(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (c *Confirm) mailURL(token string) string {
-	query := url.Values{FormValueConfirm: []string{token}}
+	/*query := url.Values{FormValueConfirm: []string{token}}
 
 	if len(c.Config.Mail.RootURL) != 0 {
 		return fmt.Sprintf("%s?%s", c.Config.Mail.RootURL+"/confirm", query.Encode())
 	}
 
 	p := path.Join(c.Config.Paths.Mount, "confirm")
-	return fmt.Sprintf("%s%s?%s", c.Config.Paths.RootURL, p, query.Encode())
+	return fmt.Sprintf("%s%s?%s", c.Config.Paths.RootURL, p, query.Encode())*/
+	return  fmt.Sprintf("%s", token)
+
 }
 
 func (c *Confirm) invalidToken(w http.ResponseWriter, r *http.Request) error {
@@ -311,3 +314,4 @@ func GenerateConfirmCreds() (selector, verifier, token string, err error) {
 		base64.URLEncoding.EncodeToString(rawToken),
 		nil
 }
+
